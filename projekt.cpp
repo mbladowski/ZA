@@ -1,4 +1,4 @@
-// Autor: Michal Bladowski, 2012
+// Autor: Micha³ Bladowski, 2012
 
 #include <iostream>
 #include <vector>
@@ -8,7 +8,9 @@
 
 using namespace std;
 
-void dodawanie();
+void dodaj();
+void mnoz();
+void porownaj();
 int zamien(char c);
 
 string pierwsza = "";
@@ -25,6 +27,7 @@ int druga_dlugosc;
 int pomocnicza = 0;
 
 char signum;
+char wynik_porownania;
 
 bool pierwsza_ujemna = false; 
 bool druga_ujemna = false; 
@@ -55,8 +58,8 @@ int main()
     
     for(i = 0; i < pierwsza.length(); i++)
     {
-        if(!((pierwsza[i] >= (char)48 && pierwsza[i] <= (char)57) || (pierwsza[i] >= 
-(char)65 && pierwsza[i] <= (char)70)))
+        if(!((pierwsza[i] >= (char)48 && pierwsza[i] <= (char)57) || 
+(pierwsza[i] >= (char)65 && pierwsza[i] <= (char)70)))
         {
             res = true;
         }
@@ -64,7 +67,8 @@ int main()
 
     for(i = 0; i < druga.length(); i++)
     {
-        if(!((druga[i] >= 48 && druga[i] <= 57) || (druga[i] >= 65 && druga[i] <= 70)))
+        if(!((druga[i] >= 48 && druga[i] <= 57) || (druga[i] >= 65 && 
+druga[i] <= 70)))
         {
             res = true;
         }
@@ -82,7 +86,8 @@ int main()
 
     for(int i = pierwsza.length() - 1; i >= 0; i -= 2)
     {
-        pierwsza_wektor.push_back(zamien(pierwsza[i - 1]) * 16 + zamien(pierwsza[i]));
+        pierwsza_wektor.push_back(zamien(pierwsza[i - 1]) * 16 + 
+zamien(pierwsza[i]));
         if(i == 2)
         {
             pierwsza_wektor.push_back(zamien(pierwsza[i - 2]));
@@ -91,7 +96,8 @@ int main()
 
     for(int i = druga.length() - 1; i >= 0; i -= 2)
     {
-        druga_wektor.push_back(zamien(druga[i - 1]) * 16 + zamien(druga[i]));
+        druga_wektor.push_back(zamien(druga[i - 1]) * 16 + 
+zamien(druga[i]));
         if(i == 2)
         {
             druga_wektor.push_back(zamien(druga[i - 2]));
@@ -101,38 +107,51 @@ int main()
     pierwsza_dlugosc = pierwsza_wektor.size();
     druga_dlugosc = druga_wektor.size();
     
-    if(signum == '+')
+    if(signum == '+' || signum == '*')
     {
-        dodawanie();
-    } 
+         if(signum == '+')
+         {
+              dodaj();
+         }
+         else if(signum == '*')
+         {
+              mnoz();
+         }
+         
+         if(wynik_ujemny)
+         {
+              cout << "-";
+         }
+
+         for(int i = wynik_wektor.size() - 1; i >= 0; i--)
+         {
+              cout << hex << uppercase << wynik_wektor[i] << endl;
+         }
+    }
+    else if(signum == '?')
+    {
+        porownaj();
+    }  
     else
     {
         cout << "Niepoprawny symbol" << endl;
     }
-
-    if(wynik_ujemny)
-    {
-        cout << "-";
-    }
-
-    for(int i = wynik_wektor.size() - 1; i >= 0; i--)
-    {
-        cout << hex << uppercase << wynik_wektor[i] << endl;
-        system("PAUSE");
-    }
-
+    
+    system("PAUSE");
+    
     return 0;
 }
 
 /* Dodawanie */
-void dodawanie()
+void dodaj()
 {
     if(pierwsza_dlugosc == druga_dlugosc)
     {
         unsigned int i;
         for(i = 0; i < pierwsza_wektor.size(); i++)
         {
-                pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + pomocnicza;
+                pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + 
+pomocnicza;
                 wynik_wektor.push_back(pomocnicza % 256);
                 pomocnicza = pomocnicza / 256;
         }
@@ -148,7 +167,8 @@ void dodawanie()
             {
                 if(i < druga_dlugosc)
                 {
-                    pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + pomocnicza;
+                    pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + 
+pomocnicza;
                     wynik_wektor.push_back(pomocnicza % 256);
                     pomocnicza = pomocnicza / 256;
                 } 
@@ -166,7 +186,8 @@ void dodawanie()
             {
                 if(i < pierwsza_dlugosc)
                 {
-                    pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + pomocnicza;
+                    pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + 
+pomocnicza;
                     wynik_wektor.push_back(pomocnicza % 256);
                     pomocnicza = pomocnicza / 256;
                 } 
@@ -179,6 +200,64 @@ void dodawanie()
             }
         }
     }
+}
+
+/* Mnozenie */
+void mnoz()
+{
+    for(int i = 0; i < pierwsza_dlugosc; i++)
+    {
+        for(int j = 0; j < druga_dlugosc; j++)
+        {
+            pomocnicza = (pierwsza_wektor[i] * druga_wektor[j]) + 
+pomocnicza;
+            wynik_wektor[j+i] = wynik_wektor[j+i] + pomocnicza;
+            pomocnicza = wynik_wektor[j+i] / 256;
+            wynik_wektor[j+i] = wynik_wektor[j+i] % 256;
+        }
+    }
+    
+    if(pomocnicza != 0) 
+    {
+        wynik_wektor.push_back(pomocnicza);
+    }
+
+    pomocnicza = 0;
+}
+
+/* Porownywanie */
+void porownaj()
+{
+    if(pierwsza_dlugosc == druga_dlugosc)
+    {
+            for(unsigned int i = 0; i < pierwsza.length(); i++)
+            {
+                if(pierwsza[i] > druga[i])
+                {
+                    wynik_porownania = '>';
+                    break;
+                }         
+                else if(pierwsza[i] < druga[i])
+                {
+                    wynik_porownania = '<';
+                    break;
+                }
+                else 
+                {
+                     wynik_porownania = '=';
+                }
+            }
+    } 
+    else if(pierwsza_dlugosc > druga_dlugosc)
+    {
+         wynik_porownania = '>';
+    }
+    else 
+    {
+         wynik_porownania = '<';
+    }
+    
+    cout << wynik_porownania << endl;
 }
 
 /* Zamiana */
