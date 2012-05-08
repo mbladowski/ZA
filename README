@@ -1,19 +1,5 @@
-Projekt 1: 
-Prosze zaimplementowac dodawanie liczb. Program powinien:
-
-Przechowywac liczby w strukturze o rozmiarze dopasowujacej sie do rozmiaru danej liczby. 
-Najlepiej jako lista, vector, albo inna struktura dynamiczna - nie trzeba jej 
-implementowac. Baza liczby niech to bedzie 
-256, albo 2^32, albo 2^64 (dla twardzieli).
-Wczytywac liczby ze standardowego wejscia. Stosujemy system 
-szesnastkowy.
-Wypisywac liczby na standardowe wyjscie. Stosujemy system 
-szesnastkowy.
-Wykonywac operacje dodawania liczb.
-
-Projekt 2:
-Wykonywac operacje mno¿enia liczb - wybór nale¿y do Ciebie, czy 
-Karatsuby czy szkolne, natomiast zaprojektowanie ³adnego eksperymentu 
-porównuj±cego te dwie metody da 2x wiêcej punktów.
-Wykonywaæ operacjê porównania liczb - wynikiem powinien byæ jeden znak: 
-= albo < albo > 
+Zaimplementowano biblioteke Bigint oraz nastepujace dzialania:
+-dodawanie,
+-mnozenie,
+-porownywanie,
+-odejmowanie.

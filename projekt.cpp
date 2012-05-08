@@ -1,281 +1,374 @@
-// Autor: Micha³ Bladowski, 2012
-
-#include <iostream>
-#include <vector>
-#include <string>
-#include <ctype.h>
-#include <cstdlib>
+#include <iomanip>
+#include <stdlib.h>
+#include <sstream>
+#include "Bignum.h"
+#define BASE 256
 
 using namespace std;
 
-void dodaj();
-void mnoz();
-void porownaj();
-int zamien(char c);
-
-string pierwsza = "";
-string pierwsza_signed = "";  
-string druga = "";
-string druga_signed = "";
-
-vector<int> pierwsza_wektor;
-vector<int> druga_wektor;
-vector<int> wynik_wektor;
-
-int pierwsza_dlugosc;
-int druga_dlugosc;
-int pomocnicza = 0;
-
-char signum;
-char wynik_porownania;
-
-bool pierwsza_ujemna = false; 
-bool druga_ujemna = false; 
-bool wynik_ujemny = false;
-
-/* Main */
-int main()
+// Constructor
+Bignum::Bignum(string x)
 {
-    cout << "Podaj dwie liczby szesnastkowe:" << endl;
-    cout << "Pierwsza_liczba Operator Druga_liczba:";
+    vector<int> v;
     
-    cin >> pierwsza >> signum >> druga;
-
-    if(!isdigit(pierwsza[0]))
+    if(x[0] == '+')
     {
-        if(pierwsza[0] == '-') pierwsza_ujemna = true;
-        pierwsza.erase(0, 1);
-    }
-
-    if(!isdigit(druga[0]))
-    {
-        if(druga[0] == '-') druga_ujemna = true;
-        druga.erase(0, 1);
-    }
-
-    unsigned int i;
-    bool res = false;
-    
-    for(i = 0; i < pierwsza.length(); i++)
-    {
-        if(!((pierwsza[i] >= (char)48 && pierwsza[i] <= (char)57) || 
-(pierwsza[i] >= (char)65 && pierwsza[i] <= (char)70)))
+        s = true;
+        for(unsigned int i = 1; i < x.length(); i++)
         {
-            res = true;
+            if(x[i] <= '9') v.push_back(x[i] - 48);
+            else if(x[i] <= 'F') v.push_back(x[i] - 55);
+            else v.push_back(x[i] - 87);
         }
     }
-
-    for(i = 0; i < druga.length(); i++)
+    else if(x[0] == '-')
     {
-        if(!((druga[i] >= 48 && druga[i] <= 57) || (druga[i] >= 65 && 
-druga[i] <= 70)))
+        s = false;
+        for(unsigned int i = 1; i < x.length(); i++)
         {
-            res = true;
+            if(x[i] <= '9') v.push_back(x[i] - 48);
+            else if(x[i] <= 'F') v.push_back(x[i] - 55);
+            else v.push_back(x[i] - 87);
+        }
+    }
+    else
+    {
+        s = true;
+        for(unsigned int i = 0; i < x.length(); i++)
+        {
+            if(x[i] <= '9')
+                v.push_back(x[i] - 48);
+            else if(x[i] <= 'F')
+                v.push_back(x[i] - 55);
+            else
+                v.push_back(x[i] - 87);
         }
     }
     
-    if(res)
+    for(int i = v.size() - 1; i >= 1; i -= 2)
     {
-        cout << "Podane liczby maja niepoprawny format" << endl;
+        l.push_back(v[i] + v[i - 1] * 16);
+    }
+    
+    if(v.size() % 2) l.push_back(v[0]);
+}
+
+// Addition
+Bignum Bignum::operator+(Bignum x)
+{
+    Bignum b;
+    b.s = true;
+    int size;
+    int car = 0;
+    
+    if(x.l.size() > this->l.size())
+    {
+        for(unsigned int i = this->l.size() - 1; i < x.l.size() - 1; 
+i++) this->l.push_back(0);
+        size = this->l.size() - 1;
+    }
+    else
+    {
+        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1; 
+i++) x.l.push_back(0);
+        size = x.l.size() - 1;
+    }
+    
+    if(this->s == true && x.s == true)
+    {
+        for(int i = 0; i <= size; i++)
+        {
+            int temp;
+            temp = (x.l[i] + this->l[i] + car);
+            if(temp > 255)
+            {
+                car = temp / BASE;
+                temp %= BASE;
+            }
+            else car = 0;
+            b.l.push_back(temp);
+        }
+        if(car != 0) b.l.push_back(car);
+    }
+    else if(this->s == true && x.s == false)
+    {
+        x.s = true;
+        b = *this - x;
+    }
+    else if(this->s == false && x.s == true)
+    {
+        this->s = true;
+        b = *this - x;
+        if(compare(*this,x) == -1) b.s = true;
+    }
+    else
+    {
+        b.s = false;
+        for(int i = 0; i <= size; i++)
+        {
+            int temp;
+            temp = (x.l[i] + this->l[i] + car);
+            if(temp > 255)
+            {
+                car = temp / BASE;
+                temp %= BASE;
+            }
+            else car = 0;
+            b.l.push_back(temp);
+        }
+        if(car != 0) b.l.push_back(car);
+    }
+    
+    while(b.l.size() > 1 && b.l.back() == 0) b.l.pop_back();
+
+    return b;
+}
+
+// Multiplication
+Bignum Bignum::operator*(Bignum x)
+{
+    Bignum b;
+    int m = this->l.size();
+    int n = x.l.size();
+    
+    if(this->s == x.s) b.s = true;
+    else b.s = false;
+    
+    for(int i = 0; i < m + n; i++) b.l.push_back(0);
+    for(int j = 0; j < n; j++)
+    {
+        if(x.l[j] == 0) b.l[j + m] = 0;
+        else
+        {
+            int c = 0;
+            for(int i = 0; i < m; i++)
+            {
+                int r = this->l[i] * x.l[j] + c + b.l[i+j];
+                b.l[i + j] = r % BASE;
+                c = r / BASE;
+            }
+            b.l[j + m] = c;
+        }
+    }
+    
+    while(b.l.size() > 1 && b.l.back() == 0) b.l.pop_back();
+
+    return b;
+}
+
+// Compare
+int compare(Bignum x, Bignum y)
+{
+    if(x.s == y.s && x.s == true)
+    {
+        if(x.l.size() > y.l.size()) return 1;
+        else if(x.l.size() < y.l.size()) return -1;
+        else
+        {
+            for(int i = x.l.size() - 1; i >= 0; i--)
+            {
+                if(x.l[i] > y.l[i]) return 1;
+                else if(x.l[i] < y.l[i]) return -1;
+            }
+        }
         return 0;
     }
-
-    pierwsza_wektor.clear();
-    druga_wektor.clear();
-    wynik_wektor.clear();
-
-    for(int i = pierwsza.length() - 1; i >= 0; i -= 2)
+    else if(x.s == true)
     {
-        pierwsza_wektor.push_back(zamien(pierwsza[i - 1]) * 16 + 
-zamien(pierwsza[i]));
-        if(i == 2)
-        {
-            pierwsza_wektor.push_back(zamien(pierwsza[i - 2]));
-        }    
+        return 1;
     }
-
-    for(int i = druga.length() - 1; i >= 0; i -= 2)
+    else if(y.s == true)
     {
-        druga_wektor.push_back(zamien(druga[i - 1]) * 16 + 
-zamien(druga[i]));
-        if(i == 2)
-        {
-            druga_wektor.push_back(zamien(druga[i - 2]));
-        }
+        return -1;
     }
-
-    pierwsza_dlugosc = pierwsza_wektor.size();
-    druga_dlugosc = druga_wektor.size();
-    
-    if(signum == '+' || signum == '*')
-    {
-         if(signum == '+')
-         {
-              dodaj();
-         }
-         else if(signum == '*')
-         {
-              mnoz();
-         }
-         
-         if(wynik_ujemny)
-         {
-              cout << "-";
-         }
-
-         for(int i = wynik_wektor.size() - 1; i >= 0; i--)
-         {
-              cout << hex << uppercase << wynik_wektor[i] << endl;
-         }
-    }
-    else if(signum == '?')
-    {
-        porownaj();
-    }  
     else
     {
-        cout << "Niepoprawny symbol" << endl;
+        if(x.l.size() > y.l.size()) return -1;
+        else if(x.l.size() < y.l.size()) return 1;
+        else
+        {
+            for(int i = x.l.size() - 1; i >= 0; i--)
+            {
+                if(x.l[i] > y.l[i]) return -1;
+                else if(x.l[i] < y.l[i]) return 1;
+            }
+        }
+        return 0;
+    }
+}
+
+// Substraction
+Bignum Bignum::operator-(Bignum x)
+{
+    Bignum b;
+    Bignum temp;
+    b.s = true;
+    int size;
+    
+    if(compare(*this,x) == -1)
+    {
+        b.s = false;
+        temp = *this;
+        *this = x;
+        x = temp;
+    }
+    else if(compare(*this,x) == 0)
+    {
+        b.l.push_back(0);
+        return b;
+    }
+    if(x.l.size() > this->l.size())
+    {
+        for(unsigned int i=this->l.size()-1;i<x.l.size()-1;i++) 
+this->l.push_back(0);
+        size = this->l.size();
+    }
+    else
+    {
+        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1; 
+i++) x.l.push_back(0);
+        size = x.l.size();
+    }
+    if(this->s == true && x.s == true)
+    {
+        int k = 0;
+        for(int i = 0; i < size; i++)
+        {
+            int temp = this->l[i] - x.l[i] + k;
+            if(temp < 0)
+            {
+                temp = temp & 255;
+                if(i + 1 < size) this->l[i+1]--;
+            }
+            
+            b.l.push_back(temp % BASE);
+            k = temp / BASE;
+        }
+    }
+    else if(this->s == false && x.s == false)
+    {
+        x.s = true;
+        int k = 0;
+        for(int i = 0; i < size; i++)
+        {
+            int temp = this->l[i] - x.l[i] + k;
+            if(temp < 0)
+            {
+                temp = temp & 255;
+                if(i + 1 < size)
+                    this->l[i + 1]--;
+            }
+            
+            b.l.push_back(temp % BASE);
+            k = temp / BASE;
+        }
+    }
+    else if(this->s == false && x.s == true)
+    {
+        x.s = false;
+        b = *this + x;
+    }
+    else if(this->s == true && x.s == false)
+    {
+        x.s = true;
+        bool temp = b.s;
+        b = *this + x;
+        if(!temp)
+            b.s = false;
     }
     
-    system("PAUSE");
+    while(b.l.size() > 1 && b.l.back() == 0) b.l.pop_back();
+
+    if(temp.l.size() != 0)
+    {
+        temp = *this;
+        *this = x;
+        x = temp;
+    }
     
+    return b;
+}
+
+// Less than
+int Bignum::operator<(Bignum x)
+{
+    if(compare(*this,x) == -1) return 1;
+    else return 0;
+}
+
+// Greater than
+int Bignum::operator>(Bignum x)
+{
+    if(compare(*this,x) == 1) return 1;
+    else return 0;
+}
+
+// Equal
+int Bignum::operator==(Bignum x)
+{
+    if(!compare(*this,x)) return 1;
+    else return 0;
+}
+
+Bignum& Bignum::operator=(int x)
+{
+    ostringstream oss;
+    oss << x;
+    string value = oss.str();
+    Bignum y(value);
+    *this = y;
+    return *this;
+}
+
+// Output
+ostream& operator<<(ostream& output, const Bignum& x)
+{
+    int i;
+    if(x.s == false) output << "-";
+    output << hex << x.l[x.l.size() - 1];
+    
+    for(i = x.l.size() - 2; i >= 0 ; i--)
+    {
+        output << setw(2) << setfill('0') << hex << x.l[i];
+    }
+    
+    return output;
+}
+
+// Main function
+int main()
+{
+    string n1;
+    string n2;
+    char action;
+    
+    cout << "Obowiazujacy format to [liczba] [operator] [liczba]:" << 
+endl;
+    cin >> n1 >> action >> n2;
+
+    Bignum x(n1);
+    Bignum y(n2);
+
+    switch(action)
+    {
+                   case '+': 
+                        cout << uppercase << x + y << endl; 
+                        break;
+                   case '-': 
+                        cout << uppercase << x - y << endl; 
+                        break;
+                   case '*': 
+                        cout << uppercase << x * y << endl; 
+                        break;
+                   case '?': 
+                        if(compare(x,y) == 1) cout << ">" << endl; 
+                        else if(compare(x,y) == -1) cout << "<" << endl; 
+                        else cout << "=" << endl; 
+                        break;
+                   default: cout << "Unrecognised operation!" << endl;
+    }
+
+    //system("PAUSE");
     return 0;
-}
-
-/* Dodawanie */
-void dodaj()
-{
-    if(pierwsza_dlugosc == druga_dlugosc)
-    {
-        unsigned int i;
-        for(i = 0; i < pierwsza_wektor.size(); i++)
-        {
-                pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + 
-pomocnicza;
-                wynik_wektor.push_back(pomocnicza % 256);
-                pomocnicza = pomocnicza / 256;
-        }
-            if(pomocnicza != 0) wynik_wektor.push_back(pomocnicza);
-            pomocnicza = 0;
-    }
-    else
-    {
-        int i;
-        if(pierwsza_dlugosc > druga_dlugosc)
-        {
-            for(i = 0; i < pierwsza_dlugosc; i++)
-            {
-                if(i < druga_dlugosc)
-                {
-                    pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + 
-pomocnicza;
-                    wynik_wektor.push_back(pomocnicza % 256);
-                    pomocnicza = pomocnicza / 256;
-                } 
-                else 
-                {
-                    pomocnicza = pierwsza_wektor[i] + pomocnicza;
-                    wynik_wektor.push_back(pomocnicza % 256);
-                    pomocnicza = pomocnicza / 256;
-                }
-            }
-        } 
-        else 
-        {
-            for(i = 0; i < druga_dlugosc; i++)
-            {
-                if(i < pierwsza_dlugosc)
-                {
-                    pomocnicza = pierwsza_wektor[i] + druga_wektor[i] + 
-pomocnicza;
-                    wynik_wektor.push_back(pomocnicza % 256);
-                    pomocnicza = pomocnicza / 256;
-                } 
-                else 
-                {
-                    pomocnicza = druga_wektor[i] + pomocnicza;
-                    wynik_wektor.push_back(pomocnicza % 256);
-                    pomocnicza = pomocnicza / 256;
-                }
-            }
-        }
-    }
-}
-
-/* Mnozenie */
-void mnoz()
-{
-    for(int i = 0; i < pierwsza_dlugosc; i++)
-    {
-        for(int j = 0; j < druga_dlugosc; j++)
-        {
-            pomocnicza = (pierwsza_wektor[i] * druga_wektor[j]) + 
-pomocnicza;
-            wynik_wektor[j+i] = wynik_wektor[j+i] + pomocnicza;
-            pomocnicza = wynik_wektor[j+i] / 256;
-            wynik_wektor[j+i] = wynik_wektor[j+i] % 256;
-        }
-    }
-    
-    if(pomocnicza != 0) 
-    {
-        wynik_wektor.push_back(pomocnicza);
-    }
-
-    pomocnicza = 0;
-}
-
-/* Porownywanie */
-void porownaj()
-{
-    if(pierwsza_dlugosc == druga_dlugosc)
-    {
-            for(unsigned int i = 0; i < pierwsza.length(); i++)
-            {
-                if(pierwsza[i] > druga[i])
-                {
-                    wynik_porownania = '>';
-                    break;
-                }         
-                else if(pierwsza[i] < druga[i])
-                {
-                    wynik_porownania = '<';
-                    break;
-                }
-                else 
-                {
-                     wynik_porownania = '=';
-                }
-            }
-    } 
-    else if(pierwsza_dlugosc > druga_dlugosc)
-    {
-         wynik_porownania = '>';
-    }
-    else 
-    {
-         wynik_porownania = '<';
-    }
-    
-    cout << wynik_porownania << endl;
-}
-
-/* Zamiana */
-int zamien(char c){
-    if((int)c >= 48 && (int)c <= 57)
-    {
-        return (int)c-48;
-    }
-
-    if((int)c >= 65 && (int)c <= 70)
-    {
-        if(c == 65) return 10;
-        if(c == 66) return 11;
-        if(c == 67) return 12;
-        if(c == 68) return 13;
-        if(c == 69) return 14;
-        if(c == 70) return 15;
-    }
-    return -1;
 }
 
