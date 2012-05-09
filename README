@@ -2,4 +2,6 @@ Zaimplementowano biblioteke Bigint oraz nastepujace dzialania:
 -dodawanie,
 -mnozenie,
 -porownywanie,
--odejmowanie.
+-odejmowanie,
+-dzielenie,
+-dzielenie modulo.

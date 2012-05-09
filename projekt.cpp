@@ -289,6 +289,50 @@ i++) x.l.push_back(0);
     return b;
 }
 
+// Division
+Bignum Bignum::operator/(Bignum x)
+{
+       
+    Bignum a("1");
+    Bignum b("0");
+    Bignum c("0");
+    Bignum zero("0");
+    Bignum one("1");
+    Bignum two("2");
+    
+    if(*this < x)
+    {
+        //zero.s = false;
+        //x.s = true;
+        return zero;
+    }
+    
+    if(*this == x)
+    {
+        return one;
+    }
+
+    while(b + x <= *this && zero * x <= *this)
+    {
+        if(two * a * x + b > *this)
+        {
+            c = *this;
+            b = a * x + b;
+            zero = zero + a;
+            a = one;
+        }
+        else a = two * a;
+    }
+    
+    return zero;
+}
+
+// Modulo division
+Bignum Bignum::operator%(Bignum x)
+{
+    return *this - x * (*this / x);
+}
+
 // Less than
 int Bignum::operator<(Bignum x)
 {
@@ -310,6 +354,7 @@ int Bignum::operator==(Bignum x)
     else return 0;
 }
 
+// Make the Bignum
 Bignum& Bignum::operator=(int x)
 {
     ostringstream oss;
@@ -320,6 +365,20 @@ Bignum& Bignum::operator=(int x)
     return *this;
 }
 
+// Less or equal
+int Bignum::operator<=(Bignum x)
+{
+    if(compare(*this,x) == -1 || compare(*this,x) == 0) return 1;
+    else return 0;
+}
+
+// Greater or equal
+int Bignum::operator>=(Bignum x)
+{
+    if(compare(*this,x) == 1 || compare(*this,x) == 0) return 1;
+    else return 0;
+}
+
 // Output
 ostream& operator<<(ostream& output, const Bignum& x)
 {
@@ -327,7 +386,7 @@ ostream& operator<<(ostream& output, const Bignum& x)
     if(x.s == false) output << "-";
     output << hex << x.l[x.l.size() - 1];
     
-    for(i = x.l.size() - 2; i >= 0 ; i--)
+    for(i = x.l.size() - 2; i >= 0; i--)
     {
         output << setw(2) << setfill('0') << hex << x.l[i];
     }
@@ -352,18 +411,31 @@ endl;
     switch(action)
     {
                    case '+': 
-                        cout << uppercase << x + y << endl; 
+                        cout << "Wynik to: " << uppercase << x + y << 
+endl; 
                         break;
                    case '-': 
-                        cout << uppercase << x - y << endl; 
+                        cout << "Wynik to: " << uppercase << x - y << 
+endl; 
                         break;
                    case '*': 
-                        cout << uppercase << x * y << endl; 
+                        cout << "Wynik to: " << uppercase << x * y << 
+endl; 
                         break;
                    case '?': 
-                        if(compare(x,y) == 1) cout << ">" << endl; 
-                        else if(compare(x,y) == -1) cout << "<" << endl; 
-                        else cout << "=" << endl; 
+                        if(compare(x,y) == 1) cout << x << " > " << y << 
+endl; 
+                        else if(compare(x,y) == -1) cout << x << " < " 
+<< y << endl; 
+                        else cout << x << " = " << y << endl; 
+                        break;
+                   case '/': 
+                        cout << "Wynik to: " << uppercase << x / y << 
+endl; 
+                        break;
+                   case '%': 
+                        cout << "Wynik to: " << uppercase << x % y << 
+endl; 
                         break;
                    default: cout << "Unrecognised operation!" << endl;
     }
@@ -371,4 +443,3 @@ endl;
     //system("PAUSE");
     return 0;
 }
-
