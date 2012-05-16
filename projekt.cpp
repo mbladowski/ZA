@@ -333,6 +333,22 @@ Bignum Bignum::operator%(Bignum x)
     return *this - x * (*this / x);
 }
 
+// Greatest common divisor
+Bignum greatest_common_divisor(Bignum x, Bignum y)
+{
+    Bignum zero("0");
+    
+    if(x == zero) return y;
+    
+    while(y != zero)
+    {
+        if(x > y) x = x - y;
+        else y = y - x;
+    }
+    
+    return x;
+}
+
 // Less than
 int Bignum::operator<(Bignum x)
 {
@@ -363,6 +379,13 @@ Bignum& Bignum::operator=(int x)
     Bignum y(value);
     *this = y;
     return *this;
+}
+
+// Unequal
+int Bignum::operator!=(Bignum x)
+{
+    if(compare(*this,x) != 0) return 1;
+    else return 0;
 }
 
 // Less or equal
@@ -435,6 +458,10 @@ endl;
                         break;
                    case '%': 
                         cout << "Wynik to: " << uppercase << x % y << 
+endl; 
+                        break;
+                   case 'g': 
+                        cout << "Wynik to: " << uppercase << greatest_common_divisor(x,y) << 
 endl; 
                         break;
                    default: cout << "Unrecognised operation!" << endl;

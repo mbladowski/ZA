@@ -26,6 +26,7 @@ int operator>(Bignum a);
 int operator==(Bignum a);
 int operator<=(Bignum a);
 int operator>=(Bignum a);
+int operator!=(Bignum a);
 
 Bignum& operator=(int a);
 

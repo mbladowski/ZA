@@ -4,4 +4,5 @@ Zaimplementowano biblioteke Bigint oraz nastepujace dzialania:
 -porownywanie,
 -odejmowanie,
 -dzielenie,
--dzielenie modulo.
+-dzielenie modulo,
+-najwiekszy wspolny dzielnik.
