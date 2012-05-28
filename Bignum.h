@@ -1,12 +1,12 @@
-#ifndef BIGNUM_hpp
-#define BIGNUM_hpp
+#ifndef BIGNUM_h
+#define BIGNUM_h
 #include <iostream>
 #include <vector>
 #include <string>
 
 using namespace std;
 
-class Bignum 
+class Bignum
 {
 
 public:
@@ -15,11 +15,13 @@ public:
     Bignum() {}
     Bignum(string a);
     
-Bignum operator+(Bignum a);    
+Bignum operator+(Bignum a);
 Bignum operator-(Bignum a);
 Bignum operator*(Bignum a);
 Bignum operator/(Bignum a);
 Bignum operator%(Bignum a);
+Bignum operator>>(int a);
+Bignum operator<<(int a);
 
 int operator<(Bignum a);
 int operator>(Bignum a);

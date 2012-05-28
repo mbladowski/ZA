@@ -5,4 +5,6 @@ Zaimplementowano biblioteke Bigint oraz nastepujace dzialania:
 -odejmowanie,
 -dzielenie,
 -dzielenie modulo,
--najwiekszy wspolny dzielnik.
+-najwiekszy wspolny dzielnik,
+-najwiekszy wspolny dzielnik algorytmem Stein'a,
+-rozszerzony algorytm Euklidesa.

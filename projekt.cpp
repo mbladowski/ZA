@@ -63,13 +63,13 @@ Bignum Bignum::operator+(Bignum x)
     
     if(x.l.size() > this->l.size())
     {
-        for(unsigned int i = this->l.size() - 1; i < x.l.size() - 1; 
+        for(unsigned int i = this->l.size() - 1; i < x.l.size() - 1;
 i++) this->l.push_back(0);
         size = this->l.size() - 1;
     }
     else
     {
-        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1; 
+        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1;
 i++) x.l.push_back(0);
         size = x.l.size() - 1;
     }
@@ -219,13 +219,13 @@ Bignum Bignum::operator-(Bignum x)
     }
     if(x.l.size() > this->l.size())
     {
-        for(unsigned int i=this->l.size()-1;i<x.l.size()-1;i++) 
+        for(unsigned int i=this->l.size()-1;i<x.l.size()-1;i++)
 this->l.push_back(0);
         size = this->l.size();
     }
     else
     {
-        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1; 
+        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1;
 i++) x.l.push_back(0);
         size = x.l.size();
     }
@@ -337,16 +337,97 @@ Bignum Bignum::operator%(Bignum x)
 Bignum greatest_common_divisor(Bignum x, Bignum y)
 {
     Bignum zero("0");
+    Bignum z("0");
     
     if(x == zero) return y;
-    
+
     while(y != zero)
     {
-        if(x > y) x = x - y;
-        else y = y - x;
+        //if(x > y) x = x - y;
+        //else y = y - x;
+        z = x % y;
+        x = y;
+        y = z;
     }
     
     return x;
+}
+
+// Stein's greatest common divisor
+Bignum stein_greatest_common_divisor(Bignum x, Bignum y)
+{
+    Bignum zero("0");
+    Bignum one("1");
+    Bignum two("2");
+    
+    // trivial cases
+    if(x == zero) return y;
+    if(y == zero) return x;
+    if(x == y) return x;
+
+    // less trivial cases :P
+    if((x % two) == zero)
+    {
+        if((y % two) == one) return greatest_common_divisor(x >> 1, y);
+        else return greatest_common_divisor(x >> 1, y >> 1) << 1;
+    }
+    
+    if((y % two) == zero) return greatest_common_divisor(x, y >> 1);
+    
+    if(x > y) return greatest_common_divisor((x - y) >> 1, y);
+    
+    return greatest_common_divisor((y - x) >> 1, x);
+}
+
+// Extended greatest common divisor
+void extended_greatest_common_divisor(Bignum x, Bignum y, Bignum* pq)
+{   
+    Bignum k;
+    Bignum r;
+    Bignum temp;
+    
+    Bignum zero("0");
+    
+    Bignum a("0");
+    Bignum b("1");
+    
+    Bignum p("1");
+    Bignum q("0");
+    
+    bool s = false;
+    
+    if(x < y)
+    {
+        temp = x;
+        x = y;
+        y = temp;
+        s = true;
+    }   
+    
+    while(y != zero)
+    {
+        k = x / y;
+        temp = x;
+        x = y;
+        y = temp % y;
+        temp = a;
+        a = p - k * a;
+        p = temp;
+        temp = b;
+        b = q - k * temp;
+        q = temp;
+    }
+    
+    if(s == false)
+    {
+        pq[0] = p;
+        pq[1] = q;
+    }
+    else
+    {
+        pq[0] = q;
+        pq[1] = p;
+    }
 }
 
 // Less than
@@ -402,6 +483,51 @@ int Bignum::operator>=(Bignum x)
     else return 0;
 }
 
+// Left shift
+Bignum Bignum::operator<<(int x)
+{
+    Bignum bnum = (*this);
+    
+    int off = 0;
+    
+    int mk[] = {128, 192, 224, 240, 248, 252, 254, 255};
+    
+    bnum.l[bnum.l.size() - 1] <<= x;
+    
+    for(int i = bnum.l.size() - 2; i >= 0; i--)
+    {
+        off = bnum.l[i] & mk[x - 1];
+        bnum.l[i + 1] |= off >> (8 - x);
+        bnum.l[i + 1] &= 255;
+        bnum.l[i] <<= x;
+    }
+    
+    bnum.l[0] &= 255;
+    
+    return bnum;
+}
+
+// Right shift
+Bignum Bignum::operator>>(int x)
+{
+    Bignum bnum = (*this);
+    
+    int off = 0;
+    
+    int mk[] = {1, 3, 7, 15, 31, 63, 127, 255};
+    
+    bnum.l[0] >>= x;
+    
+    for(unsigned int i = 1; i < bnum.l.size(); i++)
+    {
+        off = bnum.l[i] & mk[x - 1];
+        bnum.l[i - 1] |= off << (8 - x);
+        bnum.l[i] >>= x;
+    }
+    
+    return bnum;
+}
+
 // Output
 ostream& operator<<(ostream& output, const Bignum& x)
 {
@@ -423,8 +549,9 @@ int main()
     string n1;
     string n2;
     char action;
+    Bignum res[2];
     
-    cout << "Obowiazujacy format to [liczba] [operator] [liczba]:" << 
+    cout << "Obowiazujacy format to [liczba] [operator] [liczba]:" <<
 endl;
     cin >> n1 >> action >> n2;
 
@@ -433,36 +560,47 @@ endl;
 
     switch(action)
     {
-                   case '+': 
-                        cout << "Wynik to: " << uppercase << x + y << 
-endl; 
+                   case '+':
+                        cout << "Wynik to: " << uppercase << x + y <<
+endl;
                         break;
-                   case '-': 
-                        cout << "Wynik to: " << uppercase << x - y << 
-endl; 
+                   case '-':
+                        cout << "Wynik to: " << uppercase << x - y <<
+endl;
                         break;
-                   case '*': 
-                        cout << "Wynik to: " << uppercase << x * y << 
-endl; 
+                   case '*':
+                        cout << "Wynik to: " << uppercase << x * y <<
+endl;
                         break;
-                   case '?': 
-                        if(compare(x,y) == 1) cout << x << " > " << y << 
-endl; 
-                        else if(compare(x,y) == -1) cout << x << " < " 
-<< y << endl; 
-                        else cout << x << " = " << y << endl; 
+                   case '?':
+                        if(compare(x,y) == 1) cout << x << " > " << y <<
+endl;
+                        else if(compare(x,y) == -1) cout << x << " < "
+<< y << endl;
+                        else cout << x << " = " << y << endl;
                         break;
-                   case '/': 
-                        cout << "Wynik to: " << uppercase << x / y << 
-endl; 
+                   case '/':
+                        cout << "Wynik to: " << uppercase << x / y <<
+endl;
                         break;
-                   case '%': 
-                        cout << "Wynik to: " << uppercase << x % y << 
-endl; 
+                   case '%':
+                        cout << "Wynik to: " << uppercase << x % y <<
+endl;
                         break;
-                   case 'g': 
-                        cout << "Wynik to: " << uppercase << greatest_common_divisor(x,y) << 
-endl; 
+                   case 'g':
+                        cout << "Wynik to: " << uppercase << 
+greatest_common_divisor(x,y) <<
+endl;
+                        break;
+                   case 's':
+                        cout << "Wynik to: " << uppercase << 
+stein_greatest_common_divisor(x,y) <<
+endl;
+                        break;
+                   case 'e':
+                        extended_greatest_common_divisor(x,y,res);
+                        cout << "Wynik to: " << uppercase << res[0] << 
+"," << res[1] << endl;
                         break;
                    default: cout << "Unrecognised operation!" << endl;
     }
@@ -470,3 +608,4 @@ endl;
     //system("PAUSE");
     return 0;
 }
+
