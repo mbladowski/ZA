@@ -63,13 +63,13 @@ Bignum Bignum::operator+(Bignum x)
     
     if(x.l.size() > this->l.size())
     {
-        for(unsigned int i = this->l.size() - 1; i < x.l.size() - 1;
+        for(unsigned int i = this->l.size() - 1; i < x.l.size() - 1; 
 i++) this->l.push_back(0);
         size = this->l.size() - 1;
     }
     else
     {
-        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1;
+        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1; 
 i++) x.l.push_back(0);
         size = x.l.size() - 1;
     }
@@ -88,7 +88,9 @@ i++) x.l.push_back(0);
             else car = 0;
             b.l.push_back(temp);
         }
+        
         if(car != 0) b.l.push_back(car);
+        
     }
     else if(this->s == true && x.s == false)
     {
@@ -104,10 +106,12 @@ i++) x.l.push_back(0);
     else
     {
         b.s = false;
+        
         for(int i = 0; i <= size; i++)
         {
             int temp;
             temp = (x.l[i] + this->l[i] + car);
+            
             if(temp > 255)
             {
                 car = temp / BASE;
@@ -116,6 +120,7 @@ i++) x.l.push_back(0);
             else car = 0;
             b.l.push_back(temp);
         }
+        
         if(car != 0) b.l.push_back(car);
     }
     
@@ -217,18 +222,20 @@ Bignum Bignum::operator-(Bignum x)
         b.l.push_back(0);
         return b;
     }
+    
     if(x.l.size() > this->l.size())
     {
-        for(unsigned int i=this->l.size()-1;i<x.l.size()-1;i++)
-this->l.push_back(0);
+        for(unsigned int i = this->l.size() - 1; i < x.l.size() - 1; 
+i++) this->l.push_back(0);
         size = this->l.size();
     }
     else
     {
-        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1;
+        for(unsigned int i = x.l.size() - 1; i < this->l.size() - 1; 
 i++) x.l.push_back(0);
         size = x.l.size();
     }
+    
     if(this->s == true && x.s == true)
     {
         int k = 0;
@@ -430,6 +437,81 @@ void extended_greatest_common_divisor(Bignum x, Bignum y, Bignum* pq)
     }
 }
 
+// Reciprocal (mod m)
+int reciprocal(int x, int m)
+{
+    int h = m;
+    int t = x;
+    int g = 1;
+    int q = g;
+    int a = 0;
+    
+    while(t > 0)
+    {
+           if(t < h)
+           {
+               q = g; 
+               g = a; 
+               a = q;
+               q = t; 
+               t = h; 
+               h = q;
+           }
+           
+           q = t / h;
+           g = g - q * a;
+           t = t - q * h;
+    }
+    
+    if(h == 1)
+    {
+        if(a < 0) a = a + m; // get the positive value
+        
+        return a;
+    }
+    
+    return -1;
+}
+
+// Garner's chinese reminder algorithm
+void garner_cra()
+{
+     int k, n, result, product = 1, v = 0;
+     unsigned int i;
+     
+     vector<int> u,m;
+     vector<int>::iterator l; 
+     
+     cout << "Podaj z ilu rownan ma skladac sie uklad: " << endl;
+     cin >> k;
+     
+     cout << "Podawaj na przemian liczbe 'u' oraz odpowiedia liczbe 
+'m':" << endl;
+     
+     while(k > 0)
+     {
+         cin >> n;
+         u.push_back(n);
+         
+         cin >> n;
+         m.push_back(n);
+         
+         k--;
+     }
+     
+     for(l = m.begin(); l != m.end(); l++) product = product * *l;
+     
+     for(i = 0; i < u.size(); i++)
+     {
+         v = v + u[i] * (product / m[i]) * (reciprocal(product / m[i], 
+m[i]));
+     }
+        
+     result = v % product;
+     
+     cout << "Wynik to: " << result << endl;
+}
+
 // Less than
 int Bignum::operator<(Bignum x)
 {
@@ -550,9 +632,26 @@ int main()
     string n2;
     char action;
     Bignum res[2];
+
+    cout << "Aby uzyc algorytmu Garner's Chinese Reminder, podaj litere 
+r (lub R)" << endl;
+    cin >> action;
+    if(action == 'r' || action == 'R')
+    {
+          garner_cra();
+    }
+    else
+    {
     
-    cout << "Obowiazujacy format to [liczba] [operator] [liczba]:" <<
+    cout << "Zatem chcesz korzystac z pozostalych funkcji kalkulatora 
+:)" << endl;
+    cout << "Poza CRT Gainer'a, dostepne funkcje to: \n \t + \n \t - \n 
+\t * \n \t ? \n \t / \n \t %" << endl; 
+    cout << "\t g (GCD) \n \t s (Stein's GCD) \n \t e (Extended GCD)" << 
 endl;
+    cout << "Obowiazujacy format to [liczba] [operator] [liczba]:" << 
+endl;
+    
     cin >> n1 >> action >> n2;
 
     Bignum x(n1);
@@ -603,6 +702,7 @@ endl;
 "," << res[1] << endl;
                         break;
                    default: cout << "Unrecognised operation!" << endl;
+    }
     }
 
     //system("PAUSE");

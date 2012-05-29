@@ -7,4 +7,5 @@ Zaimplementowano biblioteke Bigint oraz nastepujace dzialania:
 -dzielenie modulo,
 -najwiekszy wspolny dzielnik,
 -najwiekszy wspolny dzielnik algorytmem Stein'a,
--rozszerzony algorytm Euklidesa.
+-rozszerzony algorytm Euklidesa,
+-algorytm Garner'a dla chinskiego twierdzenia o resztach.
