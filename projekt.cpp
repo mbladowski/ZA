@@ -485,8 +485,8 @@ void garner_cra()
      cout << "Podaj z ilu rownan ma skladac sie uklad: " << endl;
      cin >> k;
      
-     cout << "Podawaj na przemian liczbe 'u' oraz odpowiedia liczbe 
-'m':" << endl;
+     cout << "Podawaj na przemian liczbe U"
+	  " oraz odpowiedia liczbe M:" << endl;
      
      while(k > 0)
      {
@@ -633,8 +633,8 @@ int main()
     char action;
     Bignum res[2];
 
-    cout << "Aby uzyc algorytmu Garner's Chinese Reminder, podaj litere 
-r (lub R)" << endl;
+    cout << "Aby uzyc algorytmu Garner's Chinese Reminder,"
+	" podaj litere r (lub R)" << endl;
     cin >> action;
     if(action == 'r' || action == 'R')
     {
@@ -643,14 +643,12 @@ r (lub R)" << endl;
     else
     {
     
-    cout << "Zatem chcesz korzystac z pozostalych funkcji kalkulatora 
-:)" << endl;
-    cout << "Poza CRT Gainer'a, dostepne funkcje to: \n \t + \n \t - \n 
-\t * \n \t ? \n \t / \n \t %" << endl; 
-    cout << "\t g (GCD) \n \t s (Stein's GCD) \n \t e (Extended GCD)" << 
-endl;
-    cout << "Obowiazujacy format to [liczba] [operator] [liczba]:" << 
-endl;
+    cout << "Zatem chcesz korzystac z pozostalych funkcji"
+	" kalkulatora :)" << endl;
+    cout << "Poza CRT Gainera, dostepne funkcje to: \n \t + \n \t - \n" 
+	"\t * \n \t ? \n \t / \n \t %" << endl; 
+    cout << "\t g (GCD) \n \t s (Steins GCD) \n \t e (Extended GCD)" << endl;
+    cout << "Obowiazujacy format to [liczba] [operator] [liczba]:" << endl;
     
     cin >> n1 >> action >> n2;
 
