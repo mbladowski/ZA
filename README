@@ -9,3 +9,4 @@ Zaimplementowano biblioteke Bigint oraz nastepujace dzialania:
 -najwiekszy wspolny dzielnik algorytmem Stein'a,
 -rozszerzony algorytm Euklidesa,
 -algorytm Garner'a dla chinskiego twierdzenia o resztach.
+
