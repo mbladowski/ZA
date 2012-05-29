@@ -643,8 +643,7 @@ int main()
     else
     {
     
-    cout << "Zatem chcesz korzystac z pozostalych funkcji"
-	" kalkulatora :)" << endl;
+    cout << "Zatem chcesz korzystac z pozostalych funkcji kalkulatora :)" << endl;
     cout << "Poza CRT Gainera, dostepne funkcje to: \n \t + \n \t - \n" 
 	"\t * \n \t ? \n \t / \n \t %" << endl; 
     cout << "\t g (GCD) \n \t s (Steins GCD) \n \t e (Extended GCD)" << endl;
